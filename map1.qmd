@@ -1,0 +1,83 @@
+---
+title: "MAP1"
+format: html
+editor: visual
+---
+
+## INSTALL PACKAGES 
+
+```{r}
+#install.packages("usmap")
+install.packages("usmap")
+install.packages("ggplot2")
+install.packages("dplyr")
+install.packages("readr")
+
+```
+
+```{r}
+library(usmap)
+library(ggplot2)
+library(dplyr)
+library(readr)
+```
+
+```{r}
+cases <- read_csv("https://raw.githubusercontent.com/carlyshea26/Lyme-Map/main/LD_Case_Counts_by_County_2023_updatedcsv.csv")
+```
+
+```{r}
+# Summarize total cases by state
+state_cases <- cases %>%
+  group_by(stname) %>%
+  summarize(total_cases = sum(cases2023, na.rm = TRUE))
+
+# Add state abbreviations for mapping
+state_cases <- state_cases %>%
+  mutate(state = state.abb[match(stname, state.name)])
+
+# Plot state-level map
+plot_usmap(data = state_cases, regions = "states", values = "total_cases") +
+  scale_fill_continuous(
+    low = "white", high = "red", name = "Total Lyme Cases (2023)", label = scales::comma
+  ) +
+  labs(
+    title = "2023 Lyme Cases by State",
+    subtitle = "Total Lyme Disease Cases by State"
+  ) +
+  theme(panel.background = element_blank())
+```
+
+separate counties in New England:
+
+```{r}
+map_plot <- plot_usmap(
+    data = state_cases,
+    regions = "states",
+    values = "total_cases",
+    color = "black",
+    size = 1.5
+  ) +
+  scale_fill_gradient(
+    low = "white",
+    high = "#08306B",
+    name = "Total Lyme Cases (2023)",
+    label = scales::comma,
+    trans = "log" # Makes the gradient more stark if data is skewed
+  ) +
+  labs(
+    title = "Total Lyme Disease Cases by State (2023)"
+  ) +
+  theme(
+    panel.background = element_blank(),
+    text = element_text(family = "Times New Roman"),
+    plot.title = element_text(family = "Times New Roman", size = 16, hjust = 0.5),
+    plot.subtitle = element_text(family = "Times New Roman", size = 14, hjust = 0.5),
+    legend.title = element_text(family = "Times New Roman"),
+    legend.text = element_text(family = "Times New Roman"),
+    legend.position = "right"
+  )
+
+print(map_plot)
+
+```
