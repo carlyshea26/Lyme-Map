@@ -4,7 +4,7 @@ format: html
 editor: visual
 ---
 
-## INSTALL PACKAGES 
+## INSTALL PACKAGES
 
 ```{r}
 #install.packages("usmap")
@@ -23,7 +23,14 @@ library(readr)
 ```
 
 ```{r}
-cases <- read_csv("https://raw.githubusercontent.com/carlyshea26/Lyme-Map/main/LD_Case_Counts_by_County_2023_updatedcsv.csv")
+cases <- read_csv("https://github.com/carlyshea26/Lyme-Map/blob/main/usethissheet.csv")
+state_cases <- cases %>%
+  group_by(stname) %>%
+  summarize(total_cases = sum(cases2023, na.rm = TRUE))
+
+# Add state abbreviations for mapping
+state_cases <- state_cases %>%
+  mutate(state = state.abb[match(stname, state.name)])
 ```
 
 ```{r}
@@ -83,3 +90,6 @@ print(map_plot)
 ```
 
 still need to update and modify second map and text
+
+total lyme cases by county:
+
