@@ -1,0 +1,85 @@
+---
+title: "map2"
+format: html
+editor: visual
+---
+
+```{r}
+# Read the CSV from raw GitHub
+cases <- read_csv("https://raw.githubusercontent.com/carlyshea26/Lyme-Map/main/usethissheet.csv")
+
+# Summarize total cases by state abbreviation
+state_cases <- cases %>%
+  group_by(abbreviation) %>%
+  summarize(total_cases = sum(cases2023, na.rm = TRUE)) %>%
+  rename(state = abbreviation)
+
+# Plot map
+mapy <- plot_usmap(data = state_cases, regions = "states", values = "total_cases") +
+  scale_fill_continuous(
+    low = "white", high = "#08306B", name = "Total Lyme Cases (2023)", label = scales::comma
+  ) +
+  labs(
+    title = "2023 Total Lyme Cases by State"
+  ) +
+  theme(
+    plot.title = element_text(family = "Arial", face = "bold", size = 16, hjust = 0.5),
+    plot.subtitle = element_text(family = "Arial", face = "plain", size = 14, hjust = 0.5),
+    legend.position = "right",
+    panel.background = element_blank(),
+    plot.title.position = "plot"  # ensures proper alignment
+  )
+
+print(mapy)
+```
+
+okay now by county
+
+```{r}
+cases <- read_csv("https://raw.githubusercontent.com/carlyshea26/Lyme-Map/main/usex.csv")
+```
+
+```{r}
+
+
+# Define New England states
+new_england <- c("CT", "ME", "MA", "NH", "RI", "VT")
+
+# Clean the county names to match usmap format (remove " County")
+county_cases <- cases %>%
+  filter(abbreviation %in% new_england) %>%
+  mutate(
+    state = abbreviation,
+    county = str_remove(Ctyname, " County")
+  ) %>%
+  group_by(state, county) %>%
+  summarize(total_cases = sum(cases2023, na.rm = TRUE), .groups = "drop")
+
+# Check that names match
+# head(county_cases)
+
+# Plot with county-level shading and county **outlines**
+plot_usmap(
+  regions = "counties",
+  include = new_england,
+  data = county_cases,
+  values = "total_cases",
+  color = "black"  # <- this shows the county boundaries!
+) +
+  scale_fill_continuous(
+    low = "white", high = "#08306B", name = "2023 Lyme Cases", label = scales::comma
+  ) +
+  labs(
+    title = "New England Region",
+    subtitle = "2023 Lyme Disease Cases by County"
+  ) +
+  theme(
+    legend.position = "right",
+    plot.title = element_text(family = "Arial", face = "bold", size = 16, hjust = 0.5),
+    plot.subtitle = element_text(family = "Arial", size = 13, hjust = 0.5),
+    panel.background = element_blank()
+  )
+
+```
+
+Case map for county wont appear with individual ones highlighted
